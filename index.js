@@ -5,7 +5,7 @@ const  jwt =require('jsonwebtoken')
 const bcrypt =require('bcrypt')
 const secret_key='jhbvvvvvvvvvvdcc ygvuubb bbj'
 const PORT = 3000;
-
+const nodemailer = require("nodemailer");
 
 const app = express();
 app.use(express.json());
@@ -120,6 +120,71 @@ app.post('/register', async (req, res) => {
 
  getSystemName()
 
+
+const mailSchema =new mongoose.Schema(
+  {
+    to:{
+      type:[{email:{type:String,required:true}}],
+      required:true
+    },
+    subject:{required:true,type:String},
+    message:{required:true,type:String}
+  },
+ {timestamps:true,versionKey:false} 
+)
+
+
+
+const mailModel=mongoose.model('mail',mailSchema)
+ 
+
+app.post('/mail',async(req,res)=>{
+try{
+  const {to,subject,message}=req.body;
+
+  if(!(to && subject && message)){
+    res.status(400).json({message:"all fields requireds ,to ,message, subject"})
+  }
+   
+  const  transporter =nodemailer.createTransport(
+    {
+      host:'smtp.gmail.com',
+      port:587,
+      auth:{
+        user:"sameerab827@gmail.com",
+        pass:'fvmg oadm vrcj huij'
+      }
+    }
+  )
+  
+  const mailOption={
+    from:'sameerab827@gmail.com',
+    to:to,
+    subject:subject,
+    text:message
+
+  }
+
+
+  // const data={to,subject,text:message}
+  
+  const result =transporter.sendMail(mailOption,(error,info)=>{
+    if(error){
+      console.log(">>>>>>>Error in mail",error)
+    }
+    console.log(">>>>>>response.info>>>> ",info.response)
+  })
+  res.status(200).json({message:"mail send successfully ",success:true,data:message,result})
+
+}catch(error){
+  res.status(200).json({message:"mail error",error})
+}  
+
+})
+
+
+
+ 
 
 
 app.listen(PORT, () => {
